@@ -10,6 +10,7 @@ https://github.com/user-attachments/assets/7a1d5989-f1e8-410c-96ed-fb052af249e9
 - Отладочный интерфейс на ImGui
 ## Использованные библиотеки
 - FastNoiseLite
+- OpenGL
 - ImGui
 - GLFW
 - GLAD
