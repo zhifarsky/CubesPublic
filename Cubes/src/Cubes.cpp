@@ -973,8 +973,8 @@ static void cubes_gui(GuiArgs& args)
 	}
 	ImGui::Separator();
 
-	ImGui::SliderFloat("FOV", args.fov_slider, 0, 360);
-	ImGui::SliderFloat("Cam speed", args.camspeed_slider, 1, 20);
+	ImGui::SliderFloat("FOV", args.fov_slider, 0, 179);
+	ImGui::SliderFloat("Cam speed", args.camspeed_slider, 1, 60);
 	ImGui::Separator();
 	ImGui::Checkbox("wireframe", args.wireframe_cb);
 	ImGui::Checkbox("Debug view", args.debugView_cb);
