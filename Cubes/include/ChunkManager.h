@@ -49,6 +49,10 @@ enum class ChunkStatus : u8
 	ReadyToRender	// sent to gpu memory
 };
 
+struct ChunkBlocks {
+  Block b[CHUNK_SY][CHUNK_SZ][CHUNK_SX];
+};
+
 #define MAX_FACES_COUNT (CHUNK_SIZE * 6)
 
 struct Chunk {
@@ -63,7 +67,8 @@ struct Chunk {
   // if (chunk->status != ChunkStatus::Uninitalized && 
 	//   chunk->posx == chunkPosX && chunk->posz == chunkPosZ)
   //
-	Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX]; 
+	//Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX];
+  ChunkBlocks* blocks_new;
 };
 
 struct ChunkMeshGenResult {
@@ -191,6 +196,7 @@ struct TaskQueue {
 
 struct ChunkManager {
 	Chunk* chunks;
+  ChunkBlocks* chunksBlocks;
 	TaskQueue* queue;
 	int chunksCount;
 	int seed;
