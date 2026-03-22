@@ -178,7 +178,7 @@ bool inline IsBlockIndexValid(int y, int z, int x) {
 		z >= 0 && z < CHUNK_SZ);
 }
 
-#define ChunkGetBlock(chunk, index) (chunk->blocks[index.y][index.z][index.x])
+#define ChunkGetBlock(chunk, index) (chunk->blocks->b[index.y][index.z][index.x])
 
 void ChunkGenerateBlocks(Chunk* chunk, int posx, int posz, int seed) {
 	chunk->posx = posx;
@@ -195,7 +195,7 @@ void ChunkGenerateBlocks(Chunk* chunk, int posx, int posz, int seed) {
 	float temperatureNoiseScale = 0.7f;
 
 	// определение типов блоков
-	auto blocks = chunk->blocks;
+	ChunkBlocks* blocks = chunk->blocks;
 	for (s32 y = 0; y < CHUNK_SY; y++) {
 		for (s32 z = 0; z < CHUNK_SZ; z++) {
 			for (s32 x = 0; x < CHUNK_SX; x++) {
@@ -223,7 +223,7 @@ void ChunkGenerateBlocks(Chunk* chunk, int posx, int posz, int seed) {
 					height += 0.2;
 				}
 
-				Block* block = &blocks[y][z][x];
+				Block* block = &blocks->b[y][z][x];
 
 				// generate height
 				if (y > height * 23.0f)
@@ -278,7 +278,7 @@ void ChunkGenerateBlocks(Chunk* chunk, int posx, int posz, int seed) {
 					bool found = false;
 					for (; trunkStart.y >= 0; trunkStart.y--)
 					{
-						if (blocks[trunkStart.y][trunkStart.z][trunkStart.x].type == BlockType::btGround) {
+						if (blocks->b[trunkStart.y][trunkStart.z][trunkStart.x].type == BlockType::btGround) {
 							found = true;
 							break;
 						}
@@ -289,7 +289,7 @@ void ChunkGenerateBlocks(Chunk* chunk, int posx, int posz, int seed) {
 						for (; trunkY - trunkStart.y < treeHeight; trunkY++)
 						{
 							if (IsBlockIndexValid(trunkY, trunkStart.z, trunkStart.x)) {
-								blocks[trunkY][trunkStart.z][trunkStart.x].type = BlockType::btWood;
+								blocks->b[trunkY][trunkStart.z][trunkStart.x].type = BlockType::btWood;
 							}
 						}
 
@@ -301,7 +301,7 @@ void ChunkGenerateBlocks(Chunk* chunk, int posx, int posz, int seed) {
 							{
 								for (int x = -treeLeavesRadius; x <= treeLeavesRadius; x++)
 									if (IsBlockIndexValid(leavesY, trunkStart.z + z, trunkStart.x + x)) {
-										blocks[leavesY][trunkStart.z + z][trunkStart.x + x].type = BlockType::btLeaves;
+										blocks->b[leavesY][trunkStart.z + z][trunkStart.x + x].type = BlockType::btLeaves;
 									}
 							}
 							if (leavesY - trunkEndY >= treeLeavesHeight - 2) {
@@ -323,7 +323,7 @@ void ChunkGenerateBlocks_DEBUG(Chunk* chunk, int posx, int posz, int seed) {
 	for (s32 y = 0; y < CHUNK_SY; y++) {
 		for (s32 z = 0; z < CHUNK_SZ; z++) {
 			for (s32 x = 0; x < CHUNK_SX; x++) {
-				chunk->blocks[y][z][x].type = BlockType::btAir;
+				chunk->blocks->b[y][z][x].type = BlockType::btAir;
 			}
 		}
 	}
@@ -349,11 +349,11 @@ void ChunkGenerateBlocks_DEBUG(Chunk* chunk, int posx, int posz, int seed) {
 	{
 		for (size_t x = 0; x < 3; x++)
 		{
-			chunk->blocks[0][z][x].type = BlockType::btGround;
+			chunk->blocks->b[0][z][x].type = BlockType::btGround;
 		}
 	}
 
-	chunk->blocks[0][1][1].type = BlockType::btAir;
+	chunk->blocks->b[0][1][1].type = BlockType::btAir;
 }
 
 bool IsBlockTransparent(BlockType blockType) {
@@ -365,23 +365,23 @@ bool IsBlockTransparent(BlockType blockType) {
 	return false;
 }
 
-bool IsXPosFaceVisible(Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX], int y, int z, int x) {
-	return x == CHUNK_SX - 1 || IsBlockTransparent(blocks[y][z][x + 1].type);
+bool IsXPosFaceVisible(ChunkBlocks* blocks, int y, int z, int x) {
+	return x == CHUNK_SX - 1 || IsBlockTransparent(blocks->b[y][z][x + 1].type);
 }
-bool IsXNegFaceVisible(Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX], int y, int z, int x) {
-	return x == 0 || IsBlockTransparent(blocks[y][z][x - 1].type);
+bool IsXNegFaceVisible(ChunkBlocks* blocks, int y, int z, int x) {
+	return x == 0 || IsBlockTransparent(blocks->b[y][z][x - 1].type);
 }
-bool IsYPosFaceVisible(Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX], int y, int z, int x) {
-	return y == CHUNK_SY - 1 || IsBlockTransparent(blocks[y + 1][z][x].type);
+bool IsYPosFaceVisible(ChunkBlocks* blocks, int y, int z, int x) {
+	return y == CHUNK_SY - 1 || IsBlockTransparent(blocks->b[y + 1][z][x].type);
 }
-bool IsYNegFaceVisible(Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX], int y, int z, int x) {
-	return y == 0 || IsBlockTransparent(blocks[y - 1][z][x].type);
+bool IsYNegFaceVisible(ChunkBlocks* blocks, int y, int z, int x) {
+	return y == 0 || IsBlockTransparent(blocks->b[y - 1][z][x].type);
 }
-bool IsZPosFaceVisible(Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX], int y, int z, int x) {
-	return z == CHUNK_SZ - 1 || IsBlockTransparent(blocks[y][z + 1][x].type);
+bool IsZPosFaceVisible(ChunkBlocks* blocks, int y, int z, int x) {
+	return z == CHUNK_SZ - 1 || IsBlockTransparent(blocks->b[y][z + 1][x].type);
 }
-bool IsZNegFaceVisible(Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX], int y, int z, int x) {
-	return z == 0 || IsBlockTransparent(blocks[y][z - 1][x].type);
+bool IsZNegFaceVisible(ChunkBlocks* blocks, int y, int z, int x) {
+	return z == 0 || IsBlockTransparent(blocks->b[y][z - 1][x].type);
 }
 
 ChunkMeshGenResult ChunkGenerateMesh(Arena* tempStorage, Chunk* chunk) {
@@ -393,7 +393,7 @@ ChunkMeshGenResult ChunkGenerateMesh(Arena* tempStorage, Chunk* chunk) {
 	BlockFaceInstance* tempFaces = (BlockFaceInstance*)ArenaPushArray(tempStorage, MAX_FACES_COUNT, BlockFaceInstance);
 	u32 facesCount = 0;
 
-	auto blocks = chunk->blocks;
+	ChunkBlocks* blocks = chunk->blocks;
 
 	int inc = 1;
 
@@ -414,7 +414,7 @@ ChunkMeshGenResult ChunkGenerateMesh(Arena* tempStorage, Chunk* chunk) {
 		for (size_t z = 0; z < CHUNK_SZ; z += inc) {
 			for (size_t x = 0; x < CHUNK_SX; x += inc) {
 				
-				BlockType blockType = chunk->blocks[y][z][x].type;
+				BlockType blockType = blocks->b[y][z][x].type;
 				if (blockType != BlockType::btAir) {
 					const BlockInfo* blockInfo = GetBlockInfo(blockType);
 					TextureID texID = blockInfo->textureID;
@@ -443,7 +443,7 @@ ChunkMeshGenResult ChunkGenerateMesh(Arena* tempStorage, Chunk* chunk) {
 					for (Run& run : runs) {
 						int chunkSize[3] = { CHUNK_SY, CHUNK_SZ, CHUNK_SX };
 						int startIndex[3] = { y, z, x };
-						BlockType firstBlockType = blocks[y][z][x].type;
+						BlockType firstBlockType = blocks->b[y][z][x].type;
 
 						auto IsVisible = IsXNegFaceVisible;
 						switch (run.face)
@@ -465,7 +465,7 @@ ChunkMeshGenResult ChunkGenerateMesh(Arena* tempStorage, Chunk* chunk) {
 							accessA[run.axisA] = i;
 
 							bool* currentUsed = &run.used[accessA[0]][accessA[1]][accessA[2]];
-							BlockType currentBlockType = blocks[accessA[0]][accessA[1]][accessA[2]].type;
+							BlockType currentBlockType = blocks->b[accessA[0]][accessA[1]][accessA[2]].type;
 
 							if (
 								*currentUsed == false &&
@@ -485,7 +485,7 @@ ChunkMeshGenResult ChunkGenerateMesh(Arena* tempStorage, Chunk* chunk) {
 									}
 
 									bool* currentUsed = &run.used[accessB[0]][accessB[1]][accessB[2]];
-									BlockType currentBlockType = blocks[accessB[0]][accessB[1]][accessB[2]].type;
+									BlockType currentBlockType = blocks->b[accessB[0]][accessB[1]][accessB[2]].type;
 
 									if (
 										*currentUsed == false &&
@@ -584,13 +584,17 @@ void ChunkManagerCreate(int seed) {
 void ChunkManagerAllocChunks(GameMemory* memory, ChunkManager* manager, u32 renderDistance) {
 	int chunksCount = GetChunksCount(renderDistance);
 	// NOTE: не pushZero, так как нам не обязательно занулять всю память
-	manager->chunks = (Chunk*)ArenaPushArray(&memory->chunkStorage, chunksCount, Chunk);
+	manager->chunks = ArenaPushArray(&memory->chunkStorage, chunksCount, Chunk);
+  manager->chunksBlocks = ArenaPushArray(&memory->chunkStorage, chunksCount, ChunkBlocks);
 	manager->chunksCount = chunksCount;
 
 	for (size_t i = 0; i < chunksCount; i++)
 	{
 		Chunk* chunk = &manager->chunks[i];
+    ChunkBlocks* blocks = &manager->chunksBlocks[i]; 
 		
+    chunk->blocks = blocks;
+
 		// зануляем только необходимые поля
 		chunk->generationInProgress = false;
 		chunk->status = ChunkStatus::Uninitalized;
@@ -655,7 +659,7 @@ void ChunkSaveToDisk(Chunk* chunk, const char* worldname, int posx, int posz) {
 	FILE* f = fopen(filename, "wb");
 	if (f) {
 		dbgprint("[CHUNK SAVE] %s\n", filename);
-		fwrite(chunk->blocks, 1, sizeof(Block) * CHUNK_SIZE, f);
+		fwrite(chunk->blocks, 1, sizeof(ChunkBlocks), f);
 		fclose(f);
 	}
 	else {
@@ -691,7 +695,7 @@ bool ChunkLoadFromDisk(Chunk* chunk, const char* worldname, int posx, int posz) 
 		FILE* f = fopen(filename, "rb");
 		if (f) {
 			dbgprint("[CHUNK LOAD] %s\n", filename);
-			fread(chunk->blocks, 1, sizeof(Block) * CHUNK_SIZE, f);
+      fread(chunk->blocks, 1, sizeof(ChunkBlocks), f);
 			fclose(f);
 			chunk->posx = posx;
 			chunk->posz = posz;
@@ -806,7 +810,7 @@ Block* ChunkManagerPeekBlockFromPos(ChunkManager* manager, float posX, float pos
 	if (outChunkIndex)
 		*outChunkIndex = chunkIndex;
 
-	return &manager->chunks[chunkIndex].blocks[relativePos.y][relativePos.z][relativePos.x];
+	return &manager->chunks[chunkIndex].blocks->b[relativePos.y][relativePos.z][relativePos.x];
 }
 
 // TODO: улучить алгоритм (voxel traversal https://www.youtube.com/watch?v=ztkh1r1ioZo)

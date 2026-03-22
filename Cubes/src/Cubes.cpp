@@ -278,6 +278,8 @@ void GameUpdateAndRender(GameMemory* memory, float time, Input* input, FrameBuff
 		UI::DrawElement(GetTexture(TextureAssetID::UITexture), glm::vec3(0, 0, 0), glm::vec3(64, 64, 1), uiCross, {16, 16});
 		UI::End();
 	}
+
+  lastFBInfo = *frameBufferInfo;
 }
 
 void RenderMainMenu(GameMemory* memory, GameState* gameState, Input* input) {
