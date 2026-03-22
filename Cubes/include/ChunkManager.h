@@ -62,13 +62,7 @@ struct Chunk {
 	ChunkStatus status;
 	bool generationInProgress;
 
-  // TODO: ~30% времени на кадр уходит на кэш-промах в этой строке, так как массив blocks[] находится прямо внутри чанка:
-  // 
-  // if (chunk->status != ChunkStatus::Uninitalized && 
-	//   chunk->posx == chunkPosX && chunk->posz == chunkPosZ)
-  //
-	//Block blocks[CHUNK_SY][CHUNK_SZ][CHUNK_SX];
-  ChunkBlocks* blocks_new;
+  ChunkBlocks* blocks;
 };
 
 struct ChunkMeshGenResult {
